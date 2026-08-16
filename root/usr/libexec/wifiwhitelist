@@ -41,7 +41,7 @@ add_mac() {
     }
 
     valid_mac "$mac" || {
-        echo "Invalid MAC address" >&2
+        echo "Invalid MAC" >&2
         return 1
     }
 
