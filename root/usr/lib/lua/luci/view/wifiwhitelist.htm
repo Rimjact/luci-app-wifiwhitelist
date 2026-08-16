@@ -33,7 +33,7 @@
 
             <div class="cbi-value">
                 <label class="cbi-value-title" for="mac">
-                    MAC-адрес устройства
+                    Добавить устройство
                 </label>
 
                 <div class="cbi-value-field">
@@ -69,7 +69,7 @@
                 <input
                     class="cbi-button cbi-button-apply"
                     type="submit"
-                    value="Добавить"
+                    value="Добавить на 1 час"
                 />
             </div>
         </div>
@@ -97,15 +97,9 @@
             <tr class="tr">
                 <td class="td"><%=entry.ifname%></td>
                 <td class="td"><%=entry.mac%></td>
-                <% if etry.expires == 0 then %>
-                    <td class="td">
-                        —
-                    </td>
-                <% else %>
-                    <td class="td">
-                        <%=os.date("%Y-%m-%d %H:%M:%S", tonumber(entry.expires))%>
-                    </td>
-                <% end %>
+                <td class="td">
+                    <%=os.date("%Y-%m-%d %H:%M:%S", tonumber(entry.expires))%>
+                </td>
                 <td class="td">
                     <form method="post"
                           action="<%=luci.dispatcher.build_url(

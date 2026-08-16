@@ -28,8 +28,6 @@ delete_project_files() {
         /usr/lib/lua/luci/controller/wifiwhitelist.lua \
         /usr/lib/lua/luci/view/wifiwhitelist.htm
 
-    rmf /etc/wifiwhitelist_perm
-
     echo "--- ✅ Файлы проекта удалены ---"
 }
 

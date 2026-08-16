@@ -27,8 +27,6 @@ create_directories() {
     echo "/usr/lib/lua/luci/view/"
     mkdir -p /usr/lib/lua/luci/view/
 
-    touch /etc/wifiwhitelist_perm
-
     echo "--- ✅ Директории созданы ---"
 }
 
@@ -75,7 +73,6 @@ start_daemon() {
     echo "📕 Регулируем права..."
     chmod 755 /etc/init.d/wifiwhitelist
     chmod 755 /usr/libexec/wifiwhitelist
-    chmod 600 /etc/wifiwhitelist_perm
 
     echo "🛜 Настраиваем Wi-Fi интерфейс default_radio0"
     uci set wireless.default_radio0.macfilter='allow'
