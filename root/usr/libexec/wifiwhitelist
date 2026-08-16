@@ -77,7 +77,6 @@ add_mac_perm() {
 
     mac="$(echo "$1" | tr 'A-F' 'a-f')"
 
-    valid_ifname "$ifname" || return 1
     valid_mac "$mac" || return 1
 
     if is_perm_mac "$mac"; then
