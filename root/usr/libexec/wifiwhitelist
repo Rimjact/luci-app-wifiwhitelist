@@ -2,11 +2,20 @@
 
 PATH="/usr/sbin:/usr/bin:/sbin:/bin"
 
+PERM_DIR="/etc/wifiwhitelist_perm"
 STATE_DIR="/var/run/wifiwhitelist"
 HOSTAPD_CLI="/usr/sbin/hostapd_cli"
 TTL=3600
 
 mkdir -p "$STATE_DIR"
+
+is_perm_mac() {
+    mac="$(echo "$1" | tr 'a-F' 'A-F')"
+
+    [ -f "$PERM_DIR" ] || return 1
+
+    grep -qi -F -x "$mac" "$PERM_DIR"
+}
 
 valid_mac() {
     echo "$1" | grep -Eiq \
@@ -45,7 +54,12 @@ add_mac() {
         return 1
     }
 
-    expires=$(( $(date +%s) + TTL ))
+    if is_perm_mac "$mac"; then
+        expires=0
+    else
+        expires=$(( $(date +%s) + TTL ))
+    fi
+
     file="$STATE_DIR/${ifname}_${mac//:/-}"
 
     if ! hostapd_command "$ifname" ACCEPT_ACL ADD_MAC "$mac" >/dev/null 2>&1; then
@@ -56,6 +70,22 @@ add_mac() {
     printf '%s\n' "$expires" > "$file"
 
     echo "Added $mac on $ifname until $(date -d "@$expires" 2>/dev/null)"
+}
+
+add_mac_perm() {
+    local mac
+
+    mac="$(echo "$1" | tr 'A-F' 'a-f')"
+
+    valid_ifname "$ifname" || return 1
+    valid_mac "$mac" || return 1
+
+    if grep -qi -Fx "$mac" "$PERM_DIR" >/dev/null 2>&1; then
+        echo "MAC already exist"
+        return 1
+    fi
+
+    echo "$mac" >> "$PERM_DIR"
 }
 
 remove_mac() {
@@ -104,6 +134,10 @@ cleanup() {
             mac="${name#*_}"
             mac="$(echo "$mac" | tr '-' ':')"
 
+            if is_perm_mac "$mac"; then
+                continue
+            fi
+
             hostapd_command "$ifname" ACCEPT_ACL DEL_MAC "$mac" \
                 >/dev/null 2>&1
 
@@ -136,6 +170,11 @@ case "$1" in
     add)
         [ "$#" -eq 3 ] || exit 1
         add_mac "$2" "$3"
+        ;;
+
+    addperm)
+        [ "$#" -eq 3 ] || exit 1
+        add_mac_perm "$2"
         ;;
 
     remove)
