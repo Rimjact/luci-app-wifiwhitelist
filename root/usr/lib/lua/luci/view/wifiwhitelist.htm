@@ -1,0 +1,108 @@
+<%+header%>
+
+<h2 name="content">
+    Wi-Fi Whitelist
+</h2>
+
+<p>
+    MAC-адрес будет разрешён на один час, после чего удалён автоматически.
+</p>
+
+<form method="post"
+      action="<%=luci.dispatcher.build_url(
+          'admin', 'network', 'wifiwhitelist', 'add'
+      )%>">
+
+    <div class="cbi-map">
+        <div class="cbi-section">
+            <div class="cbi-value">
+                <label class="cbi-value-title" for="ifname">
+                    Wi-Fi интерфейсы
+                </label>
+
+                <div class="cbi-value-field">
+                    <select id="ifname" name="ifname">
+                        <% for _, ifname in ipairs(interfaces) do %>
+                            <option value="<%=ifname%>">
+                                <%=ifname%>
+                            </option>
+                        <% end %>
+                    </select>
+                </div>
+            </div>
+
+            <div class="cbi-value">
+                <label class="cbi-value-title" for="mac">
+                    Добавить устройство
+                </label>
+
+                <div class="cbi-value-field">
+                    <input
+                        id="mac"
+                        name="mac"
+                        type="text"
+                        placeholder="aa:bb:cc:dd:ee:ff"
+                        pattern="[A-Fa-f0-9]{2}(:[A-Fa-f0-9]{2}){5}"
+                        required
+                    />
+                </div>
+            </div>
+
+            <div class="cbi-page-actions">
+                <input
+                    class="cbi-button cbi-button-apply"
+                    type="submit"
+                    value="Добавить на 1 час"
+                />
+            </div>
+        </div>
+    </div>
+</form>
+
+<h3>Добавленные устройства</h3>
+
+<table class="table">
+    <tr class="tr table-titles">
+        <th class="th">Интерфейс</th>
+        <th class="th">MAC-адрес</th>
+        <th class="th">Действует до</th>
+        <th class="th">Действие</th>
+    </tr>
+
+    <% if #entries == 0 then %>
+        <tr class="tr">
+            <td class="td" colspan="4">
+                Нет активных устройств
+            </td>
+        </tr>
+    <% else %>
+        <% for _, entry in ipairs(entries) do %>
+            <tr class="tr">
+                <td class="td"><%=entry.ifname%></td>
+                <td class="td"><%=entry.mac%></td>
+                <td class="td">
+                    <%=os.date("%Y-%m-%d %H:%M:%S", tonumber(entry.expires))%>
+                </td>
+                <td class="td">
+                    <form method="post"
+                          action="<%=luci.dispatcher.build_url(
+                              'admin', 'network',
+                              'wifiwhitelist', 'remove'
+                          )%>">
+                        <input type="hidden"
+                               name="ifname"
+                               value="<%=entry.ifname%>" />
+                        <input type="hidden"
+                               name="mac"
+                               value="<%=entry.mac%>" />
+                        <input class="cbi-button cbi-button-remove"
+                               type="submit"
+                               value="Удалить" />
+                    </form>
+                </td>
+            </tr>
+        <% end %>
+    <% end %>
+</table>
+
+<%+footer%>
