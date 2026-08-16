@@ -109,7 +109,7 @@ function add()
         end
 
         local command = string.format(
-            "/usr/libexec/wifiwhitelist add %s %s >/dev/null 2>&1",
+            "/usr/libexec/wifiwhitelist add %s %s %s >/dev/null 2>&1",
             util.shellquote(ifname),
             util.shellquote(mac),
             util.shellquote(delay)
