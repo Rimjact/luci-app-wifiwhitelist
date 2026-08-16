@@ -1,0 +1,170 @@
+#!/bin/sh
+
+PATH="/usr/sbin:/usr/bin:/sbin:/bin"
+
+STATE_DIR="/var/run/wifiwhitelist"
+HOSTAPD_CLI="/usr/sbin/hostapd_cli"
+TTL=3600
+
+mkdir -p "$STATE_DIR"
+
+valid_mac() {
+    echo "$1" | grep -Eiq \
+        '^([0-9a-f]{2}:){5}[0-9a-f]{2}$'
+}
+
+valid_ifname() {
+    echo "$1" | grep -Eq '^[a-zA-Z0-9_.-]+$'
+}
+
+hostapd_command() {
+    local ifname="$1"
+    shift
+
+    "$HOSTAPD_CLI" \
+        -p /var/run/hostapd \
+        -i "$ifname" \
+        "$@"
+}
+
+add_mac() {
+    local ifname="$1"
+    local mac
+    local expires
+    local file
+
+    mac="$(echo "$2" | tr 'A-F' 'a-f')"
+
+    valid_ifname "$ifname" || {
+        echo "Invalid interface name" >&2
+        return 1
+    }
+
+    valid_mac "$mac" || {
+        echo "Invalid MAC address" >&2
+        return 1
+    }
+
+    expires=$(( $(date +%s) + TTL ))
+    file="$STATE_DIR/${ifname}_${mac//:/-}"
+
+    if ! hostapd_command "$ifname" ACCEPT_ACL ADD_MAC "$mac" >/dev/null 2>&1; then
+        echo "hostapd rejected MAC address" >&2
+        return 1
+    fi
+
+    printf '%s\n' "$expires" > "$file"
+
+    echo "Added $mac on $ifname until $(date -d "@$expires" 2>/dev/null)"
+}
+
+remove_mac() {
+    local ifname="$1"
+    local mac
+    local file
+
+    mac="$(echo "$2" | tr 'A-F' 'a-f')"
+
+    valid_ifname "$ifname" || return 1
+    valid_mac "$mac" || return 1
+
+    hostapd_command "$ifname" ACCEPT_ACL DEL_MAC "$mac" \
+        >/dev/null 2>&1
+
+    file="$STATE_DIR/${ifname}_${mac//:/-}"
+    rm -f "$file"
+
+    echo "Removed $mac from $ifname"
+}
+
+cleanup() {
+    local file
+    local expires
+    local now
+    local name
+    local ifname
+    local mac
+
+    now="$(date +%s)"
+
+    for file in "$STATE_DIR"/*; do
+        [ -f "$file" ] || continue
+
+        expires="$(cat "$file" 2>/dev/null)"
+        [ -n "$expires" ] || {
+            rm -f "$file"
+            continue
+        }
+
+        if [ "$now" -ge "$expires" ]; then
+            name="${file##*/}"
+
+            # Формат: wlan0_aa-bb-cc-dd-ee-ff
+            ifname="${name%%_*}"
+            mac="${name#*_}"
+            mac="$(echo "$mac" | tr '-' ':')"
+
+            hostapd_command "$ifname" ACCEPT_ACL DEL_MAC "$mac" \
+                >/dev/null 2>&1
+
+            rm -f "$file"
+        fi
+    done
+}
+
+list_macs() {
+    local file
+    local expires
+    local name
+    local ifname
+    local mac
+
+    for file in "$STATE_DIR"/*; do
+        [ -f "$file" ] || continue
+
+        expires="$(cat "$file" 2>/dev/null)"
+        name="${file##*/}"
+        ifname="${name%%_*}"
+        mac="${name#*_}"
+        mac="$(echo "$mac" | tr '-' ':')"
+
+        printf '%s\t%s\t%s\n' "$ifname" "$mac" "$expires"
+    done
+}
+
+case "$1" in
+    add)
+        [ "$#" -eq 3 ] || exit 1
+        add_mac "$2" "$3"
+        ;;
+
+    remove)
+        [ "$#" -eq 3 ] || exit 1
+        remove_mac "$2" "$3"
+        ;;
+
+    cleanup)
+        cleanup
+        ;;
+
+    list)
+        list_macs
+        ;;
+
+    daemon)
+        while true; do
+            cleanup
+            sleep 10
+        done
+        ;;
+
+    *)
+        echo "Usage:"
+        echo "  $0 add <interface> <mac>"
+        echo "  $0 remove <interface> <mac>"
+        echo "  $0 list"
+        echo "  $0 cleanup"
+        echo "  $0 daemon"
+        exit 1
+        ;;
+esac
