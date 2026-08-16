@@ -65,12 +65,11 @@ function add_perm(mac)
 
     mac = mac:lower()
 
-    local valid_ifname = ifname:match("^[%w%._%-]+$")
     local valid_mac = mac:match(
         "^%x%x:%x%x:%x%x:%x%x:%x%x:%x%x$"
     )
 
-    if valid_ifname and valid_mac then
+    if valid_mac then
         local command = string.format(
             "/usr/libexec/wifiwhitelist addperm %s >/dev/null 2>&1",
             util.shellquote(mac)
