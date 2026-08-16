@@ -75,16 +75,10 @@ function add()
     )
 
     if valid_ifname and valid_mac then
-        if delay == 0 then
-            add_perm(mac)
-            return
-        end
-
         local command = string.format(
             "/usr/libexec/wifiwhitelist add %s %s %s >/dev/null 2>&1",
             util.shellquote(ifname),
-            util.shellquote(mac),
-            util.shellquote(delay)
+            util.shellquote(mac)
         )
 
         sys.call(command)
