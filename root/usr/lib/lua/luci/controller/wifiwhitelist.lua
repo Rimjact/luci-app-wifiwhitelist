@@ -55,9 +55,7 @@ function main()
     })
 end
 
-function add_perm()
-    local mac = http.formvalue("mac")
-
+function add_perm(mac)
     if not mac then
         http.redirect(luci.dispatcher.build_url(
             "admin", "network", "wifiwhitelist"
@@ -89,6 +87,7 @@ end
 function add()
     local ifname = http.formvalue("ifname")
     local mac = http.formvalue("mac")
+    local delay = tonumber(http.formvalue("delay"))
 
     if not ifname or not mac then
         http.redirect(luci.dispatcher.build_url(
@@ -105,10 +104,16 @@ function add()
     )
 
     if valid_ifname and valid_mac then
+        if delay == 0 then
+            add_perm(mac)
+            return
+        end
+
         local command = string.format(
             "/usr/libexec/wifiwhitelist add %s %s >/dev/null 2>&1",
             util.shellquote(ifname),
-            util.shellquote(mac)
+            util.shellquote(mac),
+            util.shellquote(delay)
         )
 
         sys.call(command)

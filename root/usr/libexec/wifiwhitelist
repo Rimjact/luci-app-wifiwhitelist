@@ -5,7 +5,6 @@ PATH="/usr/sbin:/usr/bin:/sbin:/bin"
 PERM_DIR="/etc/wifiwhitelist_perm"
 STATE_DIR="/var/run/wifiwhitelist"
 HOSTAPD_CLI="/usr/sbin/hostapd_cli"
-TTL=3600
 
 mkdir -p "$STATE_DIR"
 
@@ -38,6 +37,7 @@ hostapd_command() {
 
 add_mac() {
     local ifname="$1"
+    local delay=$2
     local mac
     local expires
     local file
@@ -57,7 +57,7 @@ add_mac() {
     if is_perm_mac "$mac"; then
         expires=0
     else
-        expires=$(( $(date +%s) + TTL ))
+        expires=$(( $(date +%s) + delay ))
     fi
 
     file="$STATE_DIR/${ifname}_${mac//:/-}"
@@ -80,12 +80,14 @@ add_mac_perm() {
     valid_ifname "$ifname" || return 1
     valid_mac "$mac" || return 1
 
-    if grep -qi -Fx "$mac" "$PERM_DIR" >/dev/null 2>&1; then
+    if is_perm_mac "$mac"; then
         echo "MAC already exist"
         return 1
     fi
 
     echo "$mac" >> "$PERM_DIR"
+
+    echo "Added $mac to premanent"
 }
 
 remove_mac() {
@@ -200,6 +202,7 @@ case "$1" in
     *)
         echo "Usage:"
         echo "  $0 add <interface> <mac>"
+        echo "  $0 addperm <mac>"
         echo "  $0 remove <interface> <mac>"
         echo "  $0 list"
         echo "  $0 cleanup"
