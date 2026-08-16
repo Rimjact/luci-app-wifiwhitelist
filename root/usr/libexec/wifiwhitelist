@@ -28,7 +28,6 @@ hostapd_command() {
 
 add_mac() {
     local ifname="$1"
-    local delay="$3"
     local mac
     local expires
     local file
@@ -160,8 +159,7 @@ case "$1" in
 
     *)
         echo "Usage:"
-        echo "  $0 add <interface> <mac> <delay>"
-        echo "  $0 addperm <mac>"
+        echo "  $0 add <interface> <mac>"
         echo "  $0 remove <interface> <mac>"
         echo "  $0 list"
         echo "  $0 cleanup"
