@@ -37,7 +37,7 @@ hostapd_command() {
 
 add_mac() {
     local ifname="$1"
-    local delay=$2
+    local delay="$2"
     local mac
     local expires
     local file
@@ -54,11 +54,7 @@ add_mac() {
         return 1
     }
 
-    if is_perm_mac "$mac"; then
-        expires=0
-    else
-        expires=$(( $(date +%s) + delay ))
-    fi
+    expires=$(( $(date +%s) + delay ))
 
     file="$STATE_DIR/${ifname}_${mac//:/-}"
 
@@ -170,7 +166,7 @@ list_macs() {
 case "$1" in
     add)
         [ "$#" -eq 3 ] || exit 1
-        add_mac "$2" "$3"
+        add_mac "$2" "$3" "$4"
         ;;
 
     addperm)
@@ -200,7 +196,7 @@ case "$1" in
 
     *)
         echo "Usage:"
-        echo "  $0 add <interface> <mac>"
+        echo "  $0 add <interface> <mac> <delay>"
         echo "  $0 addperm <mac>"
         echo "  $0 remove <interface> <mac>"
         echo "  $0 list"
