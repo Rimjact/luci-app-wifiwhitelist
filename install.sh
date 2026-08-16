@@ -5,10 +5,12 @@ BRANCH="main"
 
 install_depends() {
     echo "--- 🔃 Устанавливаем зависимости ---"
-    echo "Зависимости: luci-base lua luci-lua-runtime libubus-lua liblucihttp-lua procd wpad"
+    echo "Зависимости: luci-base lua luci-lua-runtime libubus-lua liblucihttp-lua procd wpad hostapd-utils"
 
     apk update
-    apk add luci-base lua luci-lua-runtime libubus-lua liblucihttp-lua procd wpad
+    apk del wpad-basic-mbedtls
+    apk add wpad hostapd-utils
+    apk add luci-base lua luci-lua-runtime libubus-lua liblucihttp-lua procd
 
     echo "--- ✅ Зависимости установлены ---"
 }
@@ -98,6 +100,10 @@ install_project() {
     echo "Управление белым списком доступно на Сеть -> Wi-Fi Whitelist"
 
     rm -f /tmp/wifiwhitelist-install.sh 2>/dev/null || true
+
+    echo "ВЫПОЛНЯЕТСЯ ПЕРЕЗАГРУЗКА УСТРОЙСТВА..."
+    sleep 3
+    reboot
 }
 
 install_project
