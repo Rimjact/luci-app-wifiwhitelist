@@ -22,7 +22,7 @@ wget -O /tmp/wifiwhitelist-install.sh https://raw.githubusercontent.com/Rimjact/
 chmod +x /tmp/wifiwhitelist-install.sh
 /tmp/wifiwhitelist-install.sh
 ```
-After install go to Status -> Wi-Fi Stats at LuCI.
+After install go to Network -> Wi-Fi Whitelist at LuCI.
 
 ## Uninstallation (Удаление)
 Copy and paste commands below to your SSH terminal and press Enter.
