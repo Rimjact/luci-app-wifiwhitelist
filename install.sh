@@ -104,7 +104,7 @@ install_project() {
 
     rm -f /tmp/wifiwhitelist-install.sh 2>/dev/null || true
 
-    echo "ВЫПОЛНЯЕТСЯ ПЕРЕЗАГРУЗКА УСТРОЙСТВА..."
+    echo "ВЫПОЛНЯЕТСЯ ПЕРЕЗАГРУЗКА УСТРОЙСТВА"
     sleep 3
     reboot
 }
