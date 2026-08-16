@@ -4,6 +4,7 @@ PATH="/usr/sbin:/usr/bin:/sbin:/bin"
 
 STATE_DIR="/var/run/wifiwhitelist"
 HOSTAPD_CLI="/usr/sbin/hostapd_cli"
+TTL=3600
 
 mkdir -p "$STATE_DIR"
 
@@ -134,7 +135,7 @@ list_macs() {
 case "$1" in
     add)
         [ "$#" -eq 3 ] || exit 1
-        add_mac "$2" "$3" "$4"
+        add_mac "$2" "$3"
         ;;
 
     remove)
