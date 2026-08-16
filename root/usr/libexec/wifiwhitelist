@@ -37,7 +37,7 @@ hostapd_command() {
 
 add_mac() {
     local ifname="$1"
-    local delay="$2"
+    local delay="$3"
     local mac
     local expires
     local file
