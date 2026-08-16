@@ -72,7 +72,7 @@ start_daemon() {
     chmod 755 /etc/init.d/wifiwhitelist
     chmod 755 /usr/libexec/wifiwhitelist
 
-    echo "🛜 Настраиваем Wi-Fi интерфейс default_radio0..."
+    echo "🛜 Настраиваем Wi-Fi интерфейс default_radio0"
     uci set wireless.default_radio0.macfilter='allow'
     uci commit wireless
     wifi reload

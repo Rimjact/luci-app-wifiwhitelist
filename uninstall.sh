@@ -8,6 +8,11 @@ cleanup_services() {
     /etc/init.d/wifiwhitelist disable >/dev/null 2>&1 || true
     /etc/init.d/uhttpd restart >/dev/null 2>&1 || true
 
+    echo "🛜 Восстанавливаем Wi-Fi интерфейс default_radio0..."
+    uci delete wireless.default_radio0.macfilter='allow'
+    uci commit wireless
+    wifi reload
+
     echo "--- ✅ Приготовления к удалению закончены ---"
 }
 
